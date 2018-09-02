@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+<script type="text/javascript" src="res.js"></script>
+<script type="text/javascript" src="bird.js"></script>
+<script type="text/javascript" src="pipe.js"></script>
+<script type="text/javascript">
+    var lastRender = 0;
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    canvas.width = 800;
+    canvas.height = 400;
+    document.body.append(canvas);
+
+    const KEY = {};
+    KEY.SPACE = 32;
+
+    var bgx1 = 0;
+    var bgx2 = canvas.width;
+
+    const SPEED = 0.12;
+    var score = 0;
+
+    const bird = new Bird(70, canvas.height / 2, 30, 30);
+    let pipes = [];
+    let lastPipeSpawed = new Pipe({w: canvas.width, h: canvas.height}, SPEED);
+
+    pipes.push(lastPipeSpawed);
+
+    function update(dt) {
+
+        if(!bird.alive){
+            return;
+        }
+
+        bgx1 -= SPEED * dt;
+        bgx2 -= SPEED * dt;
+
+        if(bgx1 < -canvas.width){
+            bgx1 = 0;
+            bgx2 = canvas.width;
+        }
+
+
+        bird.update(dt);
+        bird.outOfBounce(canvas.height);
+
+        for(let i=0; i<pipes.length; ++i){
+            pipes[i].update(dt);
+            let hitTop = collide({x: bird.x, y: bird.y, w: bird.w, h: bird.h},
+                {x: pipes[i].topX, y: pipes[i].topY, w: pipes[i].w, h: pipes[i].topH});
+            let hitBot = collide({x: bird.x, y: bird.y, w: bird.w, h: bird.h},
+                {x: pipes[i].botX, y: pipes[i].botY, w: pipes[i].w, h: pipes[i].botH});
+
+            if(hitTop || hitBot){
+                bird.alive = false;
+            }
+
+            if(bird.x > pipes[i].topX + pipes[i].w && !pipes[i].passed){
+                score++;
+                pipes[i].passed = true;
+            }
+
+            if(pipes[i].topX + pipes[i].w < 0){
+                pipes.splice(i, 1);
+                i--;
+            }
+
+        }
+
+        if(canvas.height - 100 > lastPipeSpawed.topX){
+            lastPipeSpawed = new Pipe({w: canvas.width, h: canvas.height}, SPEED);
+            pipes.push(lastPipeSpawed);
+        }
+
+    }
+
+    function draw() {
+
+        context.drawImage(imgs.bg, bgx1, 0, canvas.width, canvas.height);
+        context.drawImage(imgs.bg, bgx2, 0, canvas.width, canvas.height);
+
+        bird.draw(context);
+
+        for(let i=0; i<pipes.length; ++i){
+            pipes[i].draw(context);
+        }
+
+        if(!bird.alive){
+            context.font = "30px Georgia";
+            context.fillStyle = "black";
+            context.fillText("Game Over!", canvas.width/2 - 50, canvas.height/2);
+            context.fillText("Your score is : " + score, canvas.width/2 - 50, canvas.height/2+ 50);
+        }else{
+            context.font = "30px Georgia";
+            context.fillStyle = "black";
+            context.fillText("Score: " + score, 50, 50);
+        }
+
+    }
+
+    function loop(timestamp) {
+        var dt = timestamp - lastRender;
+
+        update(dt);
+        draw();
+
+        lastRender = timestamp;
+        window.requestAnimationFrame(loop);
+    }
+
+
+
+    window.requestAnimationFrame(loop);
+
+    window.onkeyup  = function(e){
+        switch(e.keyCode){
+            case KEY.SPACE:{
+                bird.isUp = true;
+                break;
+            }
+        }
+    }
+
+    function collide( source, target ) {
+        return !(
+            ( ( source.y + source.h ) < ( target.y ) ) ||
+            ( source.y > ( target.y + target.h ) ) ||
+            ( ( source.x + source.w ) < target.x ) ||
+            ( source.x > ( target.x + target.w ) )
+        );
+    }
+
+
+</script>
+
+
+</body>
+</html>
