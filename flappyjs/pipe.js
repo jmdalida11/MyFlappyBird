@@ -8,7 +8,7 @@ class Pipe{
 
         this.w = 50;
         this.spacing = 100;
-        this.speed = speed;
+        this.speed = speed + 0.05;
 
         this.pos = pos;
         this.topH = Math.floor(Math.random() * (this.pos.h - this.spacing * 3))
