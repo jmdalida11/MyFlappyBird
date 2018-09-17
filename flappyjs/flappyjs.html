@@ -102,14 +102,20 @@
         }
 
     }
-
+	
+	const timestep = 1000 / 60;
+	let dt = 0;
     function loop(timestamp) {
-        var dt = timestamp - lastRender;
-
-        update(dt);
-        draw();
-
-        lastRender = timestamp;
+        dt += timestamp - lastRender;
+		lastRender = timestamp;
+		
+		while(dt >= timestep){
+			update(timestep);
+			dt -= timestep;
+				
+		}
+		
+		draw();
         window.requestAnimationFrame(loop);
     }
 
