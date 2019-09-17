@@ -6,18 +6,27 @@ class Bird{
         this.w = w;
         this.h = h;
 
-        this.gravity = 0.09;
-        this.up = 3;
+        this.gravity = 0.02 ;
+        this.upForce = 0.6;
+        this.yVel = 0;
         this.alive = true;
         this.isUp = false;
     }
 
     update(dt){
         if(this.alive){
-           this.y += this.gravity * dt;
+            const MAX_VEL = 5;
+
+            if(this.yVel < -MAX_VEL)
+                this.yVel = -MAX_VEL;
+            if(this.yVel > MAX_VEL)
+                this.yVel = MAX_VEL;
+
+            this.yVel += this.gravity * dt;
+            this.y += this.yVel;
 
             if(this.isUp){
-                this.y -= this.up * dt;
+                this.yVel -= this.upForce * dt;
                 this.isUp = false;
             }
 
